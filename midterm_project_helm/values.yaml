@@ -1,0 +1,10 @@
+djangoApp:
+  image:
+    repository: alexun/django-app
+    tag: latest
+  replicas: 2
+
+mysql:
+  image:
+    repository: alexun/mysql-backend
+    tag: latest

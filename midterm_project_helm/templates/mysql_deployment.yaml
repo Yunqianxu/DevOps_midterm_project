@@ -1,0 +1,76 @@
+# Service: This manifest exposes the Django application to the internet or within the cluster. 
+#A LoadBalancer service type makes it accessible over the internet when running on supported cloud providers.
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-mysql
+  labels:
+    app: django-app
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: django-app
+    tier: mysql
+  clusterIP: None
+---
+#PersistentVolumeClaim (PVC): Requests storage from the cluster to persist the MySQL database data.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: django-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---   
+#Deployment: Defines the MySQL database pod. It uses the official MySQL image and specifies
+# environment variables for database configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-mysql
+  labels:
+    app: django-app
+spec:
+  selector:
+    matchLabels:
+      app: django-app
+      tier: mysql
+  template:
+    metadata:
+      labels:
+        app: django-app
+        tier: mysql
+    spec:
+      containers:
+      - image: alexun/mysql-backend
+        name: mysql        
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        - name: MYSQL_DATABASE
+          value: django-app
+        - name: MYSQL_USER
+          value: django-app
+        - name: MYSQL_PASSWORD
+          value: yunqian123
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+   
+

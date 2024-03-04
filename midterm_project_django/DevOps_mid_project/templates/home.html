@@ -1,0 +1,14 @@
+{% extends "layout.html" %} {% block content%}
+
+<h1>Home Page</h1>
+
+{%for w in weights%}
+<li><b>{{w.created_at}}</b>:{{w.weight}} lb</li>
+{%endfor%}
+
+<form method="post" action="">
+  {% csrf_token %} {{ form.as_p }}
+  <button type="submit">Enter Weight</button>
+</form>
+
+{% endblock %}
